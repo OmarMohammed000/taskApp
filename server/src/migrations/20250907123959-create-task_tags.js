@@ -17,6 +17,7 @@ export default {
   async down (queryInterface, Sequelize) {
     await queryInterface.sequelize.query(`
       DROP TABLE IF EXISTS Task_tags;
+     
     `);
   }
 };

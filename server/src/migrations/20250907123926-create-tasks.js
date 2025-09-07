@@ -42,6 +42,11 @@ export default {
   async down(queryInterface, Sequelize) {
     await queryInterface.sequelize.query(`
       DROP TABLE IF EXISTS Tasks;
+      DROP TYPE IF EXISTS task_category;
+      DROP TYPE IF EXISTS status_codes;
+      DROP TYPE IF EXISTS priority;
+      DROP FUNCTION IF EXISTS update_timestamp;
+      DROP TRIGGER IF EXISTS set_updated_at ON Tasks;
     `);
   },
 };

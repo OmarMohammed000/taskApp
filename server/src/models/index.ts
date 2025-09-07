@@ -6,6 +6,10 @@ import { fileURLToPath } from 'url';
 import { Sequelize, DataTypes, Dialect } from 'sequelize';
 import process from 'process';
 import {config } from '../config/config.js';
+import Users from './Users.js';
+import Tasks from './Tasks.js';
+import Tags from './Tags.js';
+import Levels from './Levels.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,5 +65,19 @@ Object.keys(db).forEach(modelName => {
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
+
+db.Users=Users(sequelize);
+db.Tasks=Tasks(sequelize);
+db.Tags=Tags(sequelize);
+db.Levels=Levels(sequelize);
+
+db.Users.hasMany(db.Tasks, { foreignKey: 'user_id', as: 'tasks' });
+db.Tasks.belongsTo(db.Users, { foreignKey: 'user_id', as: 'user' });
+
+db.Levels.hasMany(db.Users, { foreignKey: 'level_id', as: 'users' });
+db.Users.belongsTo(db.Levels, { foreignKey: 'level_id', as: 'level' });
+
+db.Tasks.belongsToMany(db.Tags, { through: 'Task_tags', foreignKey: 'task_id', otherKey: 'tag_id', as: 'tags' });
+db.Tags.belongsToMany(db.Tasks, { through: 'Task_tags', foreignKey: 'tag_id', otherKey: 'task_id', as: 'tasks' });
 
 export default db;

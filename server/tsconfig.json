@@ -3,11 +3,11 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "target": "es2024",
-    "strict": true,
+    "strict":false,
     "sourceMap": true,
     "outDir": "./dist",
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
   },
   "include": ["src/**/*"]
 }

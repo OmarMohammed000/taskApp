@@ -6,9 +6,9 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "dev": "nodemon --watch src --ext ts --exec \"node --loader ts-node/esm src/index.ts\""
   },
   "keywords": [],
   "author": "",
@@ -17,10 +17,12 @@
     "bcryptjs": "^3.0.2",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3",
     "sequelize": "^6.37.7"
   },
   "devDependencies": {
+    "@types/express": "^5.0.3",
     "@types/node": "^24.3.1",
     "@types/sequelize": "^4.28.20",
     "nodemon": "^3.1.10",

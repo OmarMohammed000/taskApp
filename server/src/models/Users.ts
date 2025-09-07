@@ -11,7 +11,7 @@ interface UserAttributes {
 }
 type UserCreationAttributes = Optional<UserAttributes, 'id'| 'xp' | 'level_id' | 'createdAt'>;
 const Users = (sequelize: Sequelize) => {
-  return sequelize.define<Model<UserAttributes, UserCreationAttributes>>("Users", {
+  return sequelize.define<Model<UserAttributes, UserCreationAttributes>>("users", {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,

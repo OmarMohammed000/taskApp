@@ -2,7 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { Sequelize, DataTypes, Dialect } from 'sequelize';
 import process from 'process';
 import {config } from '../config/config.js';
@@ -51,7 +51,7 @@ const files = fs
 
 for (const file of files) {
   const filePath = path.join(__dirname, file);
-  const modelModule = await import(filePath);
+  const modelModule = await import(pathToFileURL(filePath).toString());
   const define = modelModule.default ?? modelModule;
   const model = define(sequelize, DataTypes);
   db[model.name] = model;

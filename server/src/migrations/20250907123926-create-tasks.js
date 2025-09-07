@@ -19,7 +19,7 @@ export default {
       (category = 'todo' and xp_value=25) or (category='habit' and xp_value=50)
     ),
     status status_codes not null ,
-    due_data timestamp ,
+    due_date timestamp ,
     created_at timestamp not null default NOW(),
     updated_at timestamp 
     );

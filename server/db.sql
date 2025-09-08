@@ -29,7 +29,9 @@ CREATE TABLE Tasks(
  status status_codes not null ,
  due_data timestamp ,
  created_at timestamp not null default NOW(),
- updated_at timestamp 
+ updated_at timestamp ,
+ FOREIGN KEY (user_id) REFERENCES Users(id)
+ 
 );
 CREATE TABLE Tags(
 	id serial primary key ,

@@ -1,3 +1,4 @@
+import { ref } from "process";
 import { DataTypes, Sequelize, Model,Optional} from "sequelize";
 
 interface UserAttributes {
@@ -8,10 +9,11 @@ interface UserAttributes {
   xp?: number;
   level_id?: number;
   createdAt?: Date;
+  refresh_token?: string;
 }
 type UserCreationAttributes = Optional<UserAttributes, 'id'| 'xp' | 'level_id' | 'createdAt'>;
 const Users = (sequelize: Sequelize) => {
-  return sequelize.define<Model<UserAttributes, UserCreationAttributes>>("users", {
+  return sequelize.define<Model<UserAttributes, UserCreationAttributes>>("Users", {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -42,6 +44,10 @@ const Users = (sequelize: Sequelize) => {
         key: 'id'
       }
     },
+    refresh_token: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    }
   }, {
     tableName: "Users",
     timestamps: true,

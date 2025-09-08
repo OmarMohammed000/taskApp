@@ -9,7 +9,7 @@ export default {
     CREATE TYPE status_codes AS ENUM ('pending','in_progress','completed');
     CREATE TYPE priority AS ENUM ('high','medium','low');
 
-    CREATE TABLE Tasks(
+    CREATE TABLE "Tasks"(
     id serial primary key ,
     user_id  int ,
     title text not null ,
@@ -21,7 +21,8 @@ export default {
     status status_codes not null ,
     due_date timestamp ,
     created_at timestamp not null default NOW(),
-    updated_at timestamp 
+    updated_at timestamp ,
+    FOREIGN KEY (user_id) REFERENCES "Users"(id)
     );
      -- creating the function first then the trigger 
     CREATE OR REPLACE  FUNCTION update_timestamp() 
@@ -33,7 +34,7 @@ export default {
     $$ LANGUAGE plpgsql;
     -- trigger
     CREATE TRIGGER set_updated_at
-    BEFORE UPDATE ON Tasks
+    BEFORE UPDATE ON "Tasks"
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
       `);
@@ -41,12 +42,12 @@ export default {
 
   async down(queryInterface, Sequelize) {
     await queryInterface.sequelize.query(`
-      DROP TABLE IF EXISTS Tasks;
+      DROP TABLE IF EXISTS "Tasks";
       DROP TYPE IF EXISTS task_category;
       DROP TYPE IF EXISTS status_codes;
       DROP TYPE IF EXISTS priority;
       DROP FUNCTION IF EXISTS update_timestamp;
-      DROP TRIGGER IF EXISTS set_updated_at ON Tasks;
+      DROP TRIGGER IF EXISTS set_updated_at ON "Tasks";
     `);
   },
 };

@@ -4,8 +4,6 @@ import bcrypt from "bcryptjs";
 import { QueryTypes } from 'sequelize';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET:string = process.env.JWT_SECRET as string;
-const JWT_REFRESH_SECRET:string = process.env.JWT_REFRESH_SECRET as string;
 
 export default async function login(req: Request, res: Response): Promise<Response | void> {
   const { email, password } = req.body;
@@ -14,7 +12,7 @@ export default async function login(req: Request, res: Response): Promise<Respon
   }
 
   try {
-    const user = await db.Users.sequelize.query(`SELECT * FROM "users" WHERE email = $1`, {
+    const user = await db.Users.sequelize.query(`SELECT * FROM "Users" WHERE email = $1`, {
       bind: [email], type: QueryTypes.SELECT
     });
     if (!user[0]) {

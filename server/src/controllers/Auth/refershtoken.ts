@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import db from "../../models/index.js";
 import crypto from "crypto";
+import { QueryTypes } from "sequelize";
 
 export default async function refreshToken(req: Request, res: Response): Promise<Response | void> {
   const refreshToken = req.cookies.refreshToken;
@@ -17,7 +18,8 @@ export default async function refreshToken(req: Request, res: Response): Promise
 
     const user = await db.Users.sequelize.query(`SELECT * FROM "Users" WHERE
       id=$1 AND refresh_token = $2`, {
-      bind: [decoded.userId, hashedToken]
+      bind: [decoded.userId, hashedToken],
+      type: QueryTypes.SELECT
     });
     if (!user || user.length === 0) {
       res.clearCookie('refreshToken');
@@ -30,7 +32,8 @@ export default async function refreshToken(req: Request, res: Response): Promise
     const newAccessRefreshHash = crypto.createHash("sha256").update(newAccessRefreshToken).digest("hex");
 
     await db.Users.sequelize.query(`UPDATE "Users" SET refresh_token = $1 WHERE id = $2`, {
-      bind: [newAccessRefreshHash, user[0].id]
+      bind: [newAccessRefreshHash, user[0].id],
+      type: QueryTypes.UPDATE
     });
     res.cookie('refreshToken', newAccessRefreshToken, {
       httpOnly: true,

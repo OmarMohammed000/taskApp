@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import db from "../../models/index.js";
 import crypto from "crypto";
+import { QueryTypes } from 'sequelize';
 
 export default async function logout(req: Request, res: Response): Promise<Response | void> {
   try{
@@ -8,7 +9,8 @@ export default async function logout(req: Request, res: Response): Promise<Respo
   if (refreshToken) {
     const hashedToken = crypto.createHash("sha256").update(refreshToken).digest("hex");
     await db.Users.sequelize.query(`UPDATE "Users" SET refresh_token = NULL WHERE refresh_token = $1`, {
-      bind: [hashedToken]
+      bind: [hashedToken],
+      type: QueryTypes.UPDATE
     });
   }
   res.clearCookie('refreshToken', {

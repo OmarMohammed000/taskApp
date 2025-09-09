@@ -62,7 +62,7 @@ export default async function updateUser(req:Request,res:Response):Promise<Respo
     return res.status(200).json(updatedUser[0]);
   }catch(error){
     console.error("Error updating user:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error while updating user" });
   }
 
 

@@ -18,6 +18,6 @@ export default async function getTaskById(req: Request, res: Response): Promise<
     return res.status(200).json(task[0]);
   } catch (error) {
     console.error("Error fetching task:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error while fetching task" });
   }
 }

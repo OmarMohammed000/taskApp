@@ -5,6 +5,9 @@ import { QueryTypes } from 'sequelize';
 
 
 export default async function register(req: Request, res: Response): Promise<Response | void> {
+  if(!req.body || Object.keys(req.body).length === 0) {
+    return res.status(400).json({ message: "Request body is missing" });
+  }
   const { email, name, password } = req.body;
   if (!email || !name || !password) {
     return res.status(400).json({ message: "Missing required fields" });

@@ -3,6 +3,9 @@ import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
 
 export default async function updateUser(req:Request,res:Response):Promise<Response|void>{
+  if(!req.body || Object.keys(req.body).length === 0) {
+    return res.status(400).json({ message: "Request body is missing" });
+  }
   const {userId, name, email} = req.body;
   if (!userId || (!name && !email)) {
     return res.status(400).json({ message: "Missing required fields" });
@@ -48,7 +51,7 @@ export default async function updateUser(req:Request,res:Response):Promise<Respo
       UPDATE "Users" 
       SET ${updates.join(', ')} 
       WHERE id = $${paramCount}
-      RETURNING id, name, email, updated_at
+      RETURNING id, name, email
     `;
 
     const updatedUser = await db.Users.sequelize.query(updateQuery, {

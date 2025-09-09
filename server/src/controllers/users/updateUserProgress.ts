@@ -3,6 +3,9 @@ import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
 
 export default async function updateUserProgress(req: Request, res: Response): Promise<Response | void> {
+  if(!req.body || Object.keys(req.body).length === 0) {
+    return res.status(400).json({ message: "Request body is missing" });
+  }
   const { userId, xpGained } = req.body;
   if (!userId || !xpGained || (parseInt(xpGained) !== 25 && parseInt(xpGained) !== 50)) {
     return res.status(400).json({ message: "Missing or invalid required fields" });

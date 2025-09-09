@@ -3,13 +3,13 @@ import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
 
 export default async function getUserById(req: Request, res: Response): Promise<Response | void> {
-  const userId = parseInt(req.params.id);
+  const userId = req.params.id ? parseInt(req.params.id) : NaN;
   if (isNaN(userId)) {
     return res.status(400).json({ message: "Invalid user ID" });
   }
 
   try {
-    const user = await db.User.sequelize.query(`SELECT id, name, email, xp, level FROM "Users" WHERE id = $1`, {
+    const user = await db.Users.sequelize.query(`SELECT id, name, email, xp, level_id FROM "Users" WHERE id = $1`, {
       bind:[userId], type: QueryTypes.SELECT
     });
     if (!user) {

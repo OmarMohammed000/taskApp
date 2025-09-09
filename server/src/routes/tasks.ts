@@ -1,0 +1,17 @@
+import { Router } from "express";
+import { isAuth } from "../middleware/isAuth.js";
+import getTaskById from "../controllers/tasks/getTaskById.js";
+import createTask from "../controllers/tasks/createTask.js";
+import updateTask from "../controllers/tasks/updateTask.js";
+import deleteTask from "../controllers/tasks/deleteTask.js";
+
+const taskRoutes = Router();
+
+//all routes below are protected to make sure they are logged in
+taskRoutes.use(isAuth);
+taskRoutes.get("/:id", getTaskById);
+taskRoutes.post("/", createTask);
+taskRoutes.patch("/:id", updateTask);
+taskRoutes.delete("/:id", deleteTask);
+
+export default taskRoutes;

@@ -8,9 +8,10 @@ import deleteUser from "../controllers/users/deleteUser.js";
 const userRoutes = Router();
 
 //all routes below are protected to make sure they are logged in
-userRoutes.get("/:id", isAuth, getUserById);
-userRoutes.put("/", isAuth, updateUser);
-userRoutes.patch("/progress", isAuth, updateUserProgress);
-userRoutes.delete("/:id", isAuth, deleteUser);
+userRoutes.use(isAuth);
+userRoutes.get("/:id",  getUserById);
+userRoutes.put("/", updateUser);
+userRoutes.patch("/progress",  updateUserProgress);
+userRoutes.delete("/:id",  deleteUser);
 
 export default userRoutes;

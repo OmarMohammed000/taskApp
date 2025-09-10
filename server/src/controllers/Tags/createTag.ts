@@ -1,6 +1,7 @@
 import { Request,Response } from "express";
 import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
+import isSafe from "../../utils/isSafe.js";
 
 export default async function createTag(req: Request, res: Response): Promise<Response | void> {
   if (!req.body || Object.keys(req.body).length === 0) {
@@ -12,7 +13,9 @@ export default async function createTag(req: Request, res: Response): Promise<Re
   if (!name) {
     return res.status(400).json({ message: "Missing required fields" });
   }
-
+  if(!isSafe([name])) {
+    return res.status(400).json({ message: "Input contains unsafe characters" });
+  }
   try {
     const existingTag = await db.Tags.sequelize.query(`SELECT * FROM "Tags" WHERE name = $1`, {
       bind: [name],

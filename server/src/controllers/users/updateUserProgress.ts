@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
+import isSafe from "../../utils/isSafe.js";
 
 export default async function updateUserProgress(req: Request, res: Response): Promise<Response | void> {
   if(!req.body || Object.keys(req.body).length === 0) {
@@ -9,6 +10,9 @@ export default async function updateUserProgress(req: Request, res: Response): P
   const { userId, xpGained } = req.body;
   if (!userId || !xpGained || (parseInt(xpGained) !== 25 && parseInt(xpGained) !== 50)) {
     return res.status(400).json({ message: "Missing or invalid required fields" });
+  }
+  if(isSafe([String(userId), String(xpGained)]) === false) {
+    return res.status(400).json({ message: "Input contains unsafe characters" });
   }
   const t = await db.sequelize.transaction();
 

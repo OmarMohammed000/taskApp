@@ -1,6 +1,7 @@
 import { Request,Response } from "express";
 import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
+import isSafe from "../../utils/isSafe.js";
 
 export default async function addTagToTask(req: Request, res: Response): Promise<Response | void> {
   if(!req.body || Object.keys(req.body).length === 0) {
@@ -9,6 +10,9 @@ export default async function addTagToTask(req: Request, res: Response): Promise
   const { taskId, tagId } = req.body;
   if (!taskId || !tagId) {
     return res.status(400).json({ message: "Missing required fields"});
+  }
+  if (!isSafe([String(taskId), String(tagId)])) {
+    return res.status(400).json({ message: "Input contains unsafe characters" });
   }
   try {
     // Check if task exists

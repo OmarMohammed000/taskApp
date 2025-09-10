@@ -1,6 +1,7 @@
 import { Request,Response } from "express";
 import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
+import isSafe from "../../utils/isSafe.js";
 
 export default async function updateTask(req: Request, res: Response): Promise<Response | void> {
   const taskId = req.params.id ? parseInt(req.params.id) : NaN;
@@ -13,6 +14,9 @@ export default async function updateTask(req: Request, res: Response): Promise<R
   const { title, description,due_date,category,status } = req.body;
   if ((!title && !description && !due_date && !category && !status) || (title === "" || description === "" || due_date === "" || category === "" || status === "")) {
     return res.status(400).json({ message: "At least one valid field (non-empty) must be provided to update" });
+  }
+  if(isSafe([title, description ?? "", category, status]) === false) {
+    return res.status(400).json({ message: "Input contains unsafe characters" });
   }
   try{
     const task = await db.Tasks.sequelize.query(`SELECT * FROM "Tasks" WHERE id = $1`, {

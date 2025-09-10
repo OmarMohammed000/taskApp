@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import db from "../../models/index.js";
 import bcrypt from "bcryptjs";
 import { QueryTypes } from 'sequelize';
+import isSafe from '../../utils/isSafe.js';
 
 
 export default async function register(req: Request, res: Response): Promise<Response | void> {
@@ -12,7 +13,9 @@ export default async function register(req: Request, res: Response): Promise<Res
   if (!email || !name || !password) {
     return res.status(400).json({ message: "Missing required fields" });
   }
-
+  if(isSafe([email, name, password]) === false) {
+    return res.status(400).json({ message: "Input contains unsafe characters" });
+  }
   try {
     const existingUser = await db.Users.sequelize.query(`SELECT email FROM "Users" WHERE email = $1`, {
       bind: [email], type: QueryTypes.SELECT

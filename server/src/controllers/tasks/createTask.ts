@@ -1,6 +1,7 @@
 import { Response,Request } from "express";
 import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
+import isSafe from "../../utils/isSafe.js";
 
 export default async function createTask(req: Request, res: Response): Promise<Response | void> {
   if(!req.body || Object.keys(req.body).length === 0) {
@@ -31,7 +32,9 @@ export default async function createTask(req: Request, res: Response): Promise<R
         return res.status(400).json({ message: "Invalid category value" });
     }
   }
-
+  if(isSafe([title, description ?? "", category, status]) === false) {
+    return res.status(400).json({ message: "Input contains unsafe characters" });
+  }
   try{
     const user = await db.Users.sequelize.query(`SELECT * FROM "Users" WHERE id = $1`, {
       bind:[userId],

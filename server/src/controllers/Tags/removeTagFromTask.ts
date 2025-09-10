@@ -10,6 +10,9 @@ export default async function removeTagFromTask(req: Request, res: Response): Pr
   if (!taskId || !tagId) {
     return res.status(400).json({ message: "Missing required fields" });
   }
+  if(isNaN(parseInt(taskId)) || isNaN(parseInt(tagId))) {
+    return res.status(400).json({ message: "Invalid task ID or tag ID" });
+  }
   try {
     const result = await db.Tags.sequelize.query(`DELETE FROM "Task_tags" WHERE task_id = $1 AND tag_id = $2 RETURNING *`, {
       bind: [taskId, tagId],

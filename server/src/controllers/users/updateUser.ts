@@ -1,6 +1,7 @@
 import { Request,Response } from "express";
 import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
+import isSafe from "../../utils/isSafe.js";
 
 export default async function updateUser(req:Request,res:Response):Promise<Response|void>{
   if(!req.body || Object.keys(req.body).length === 0) {
@@ -9,6 +10,9 @@ export default async function updateUser(req:Request,res:Response):Promise<Respo
   const {userId, name, email} = req.body;
   if (!userId || (!name && !email)) {
     return res.status(400).json({ message: "Missing required fields" });
+  }
+  if(isSafe([String(userId), name ?? "", email ?? ""]) === false) {
+    return res.status(400).json({ message: "Input contains unsafe characters" });
   }
   try{
     const user = await db.Users.sequelize.query(`SELECT * FROM "Users" WHERE id = $1`, {

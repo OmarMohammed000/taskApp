@@ -1,6 +1,7 @@
 import { Request,Response } from "express";
 import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
+import isSafe from "../../utils/isSafe.js";
 
 export default async function getTasksWithTags(req: Request, res: Response): Promise<Response | void> {
   if(!req.body || Object.keys(req.body).length === 0) {
@@ -13,6 +14,9 @@ export default async function getTasksWithTags(req: Request, res: Response): Pro
   const { name } = req.body;
   if (!name) {
     return res.status(400).json({ message: "Missing required field: name" });
+  }
+  if (isSafe([name]) === false) {
+    return res.status(400).json({ message: "Input contains unsafe characters" });
   }
   try {
    const tag = await db.Tags.sequelize.query(`UPDATE "Tags" SET name=$1 WHERE id= $2 RETURNING name`, {

@@ -22,6 +22,7 @@ export default {
   async down(queryInterface, Sequelize) {
     await queryInterface.sequelize.query(`
       DROP TABLE IF EXISTS "Users";
+      DROP INDEX IF EXISTS idx_email;
     `);
   },
 };

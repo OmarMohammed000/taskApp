@@ -5,6 +5,7 @@ import createTask from "../controllers/tasks/createTask.js";
 import updateTask from "../controllers/tasks/updateTask.js";
 import deleteTask from "../controllers/tasks/deleteTask.js";
 import getTasksByUserId from "../controllers/tasks/getTaskByUserId.js";
+import completeTask from "../controllers/tasks/completeTask.js";
 
 const taskRoutes = Router();
 
@@ -15,5 +16,5 @@ taskRoutes.get("/user/:id", getTasksByUserId);
 taskRoutes.post("/", createTask);
 taskRoutes.patch("/:id", updateTask);
 taskRoutes.delete("/:id", deleteTask);
-
+taskRoutes.patch("/:id/complete", completeTask);
 export default taskRoutes;

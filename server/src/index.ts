@@ -1,5 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import http from 'http';
+import { Server } from 'socket.io';
+import jwt from 'jsonwebtoken';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import cookieParser from 'cookie-parser';
@@ -12,8 +15,29 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-const PORT = process.env.PORT || 3000;
+const server = http.createServer(app);
+export const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true
+  }
+});
 
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) {
+    return next(new Error("Authentication error")); 
+  }
+  try{
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+    socket.data.userId = (decoded as { userId: number }).userId;
+    socket.join(`user_${socket.data.userId}`);
+    socket.join("leaderboard");
+    next();
+  } catch (error) {
+    next(new Error("Authentication error"));
+  }
+});
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/tasks',taskRoutes);
@@ -22,6 +46,7 @@ app.use('/tags', tagRoutes);
 
 
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

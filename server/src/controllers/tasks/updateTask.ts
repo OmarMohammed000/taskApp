@@ -1,31 +1,33 @@
-import { Request,Response } from "express";
+import { Request, Response } from "express";
 import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
 import isSafe from "../../utils/isSafe.js";
+import completeTask from "./completeTask.js";
 
 export default async function updateTask(req: Request, res: Response): Promise<Response | void> {
   const taskId = req.params.id ? parseInt(req.params.id) : NaN;
   if (isNaN(taskId)) {
     return res.status(400).json({ message: "Invalid task ID" });
   }
-  if(!req.body || Object.keys(req.body).length === 0) {
+  if (!req.body || Object.keys(req.body).length === 0) {
     return res.status(400).json({ message: "Request body is missing" });
   }
-  const { title, description,due_date,category,status } = req.body;
+  const { title, description, due_date, category, status } = req.body;
   if ((!title && !description && !due_date && !category && !status) || (title === "" || description === "" || due_date === "" || category === "" || status === "")) {
     return res.status(400).json({ message: "At least one valid field (non-empty) must be provided to update" });
   }
-  if(isSafe([title, description ?? "", category, status]) === false) {
+  if (isSafe([title, description ?? "", category, status]) === false) {
     return res.status(400).json({ message: "Input contains unsafe characters" });
   }
-  try{
+  try {
     const task = await db.Tasks.sequelize.query(`SELECT * FROM "Tasks" WHERE id = $1`, {
-      bind:[taskId],
+      bind: [taskId],
       type: QueryTypes.SELECT
     });
     if (!task[0]) {
       return res.status(404).json({ message: "Task not found" });
     }
+    const isCompletingTask = status === "completed" && task[0].status !== "completed";
     const updates: string[] = [];
     const bindings: any[] = [];
     let paramCount = 1;
@@ -49,17 +51,17 @@ export default async function updateTask(req: Request, res: Response): Promise<R
     }
     let xp_value: number;
     if (category) {
-      if(category !== "todo" && category !== "habit" ) {
+      if (category !== "todo" && category !== "habit") {
         return res.status(400).json({ message: "Invalid category value" });
       }
-      switch(category) {
-        case "todo":{
-           xp_value = 25;
-           break;
+      switch (category) {
+        case "todo": {
+          xp_value = 25;
+          break;
         }
-        case "habit":{
-           xp_value = 50;
-           break;
+        case "habit": {
+          xp_value = 50;
+          break;
         }
       }
       updates.push(`category = $${paramCount++}`);
@@ -67,7 +69,7 @@ export default async function updateTask(req: Request, res: Response): Promise<R
       bindings.push(category, xp_value);
     }
     if (status) {
-      if(status !== "pending" && status !== "in_progress" && status !== "completed") {
+      if (status !== "pending" && status !== "in_progress" && status !== "completed") {
         return res.status(400).json({ message: "Invalid status value" });
       }
       updates.push(`status = $${paramCount++}`);
@@ -79,7 +81,10 @@ export default async function updateTask(req: Request, res: Response): Promise<R
       bind: [...bindings, taskId],
       type: QueryTypes.UPDATE
     });
-
+    if (isCompletingTask) {
+      
+      return completeTask(req, res);
+    }
     return res.status(200).json({ message: "Task updated successfully", task: updatedTask[0] });
   } catch (error) {
     console.error("Error updating task:", error);

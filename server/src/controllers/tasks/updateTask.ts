@@ -43,15 +43,27 @@ export default async function updateTask(req: Request, res: Response): Promise<R
       updates.push(`due_date = $${paramCount++}`);
       bindings.push(parsed.toISOString()); // push normalized date
     }
+    let xp_value: number;
     if (category) {
       if(category !== "todo" && category !== "habit" ) {
         return res.status(400).json({ message: "Invalid category value" });
       }
+      switch(category) {
+        case "todo":{
+           xp_value = 25;
+           break;
+        }
+        case "habit":{
+           xp_value = 50;
+           break;
+        }
+      }
       updates.push(`category = $${paramCount++}`);
-      bindings.push(category);
+      updates.push(`xp_value = $${paramCount++}`);
+      bindings.push(category, xp_value);
     }
     if (status) {
-      if(status !== "pending" && status !== "in-progress" && status !== "completed") {
+      if(status !== "pending" && status !== "in_progress" && status !== "completed") {
         return res.status(400).json({ message: "Invalid status value" });
       }
       updates.push(`status = $${paramCount++}`);

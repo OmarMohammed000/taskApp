@@ -3,8 +3,13 @@ import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
 
 export default async function getTags(req: Request, res: Response): Promise<Response | void> {
+  const tagId = parseInt(req.params.id);
+  if (isNaN(tagId)) {
+    return res.status(400).json({ message: "Invalid tag ID" });
+  }
   try{
-    const tags = await db.Tags.sequelize.query(`SELECT * FROM "Tags"`, {
+    const tags = await db.Tags.sequelize.query(`SELECT * FROM "Tags" WHERE id = $1`, {
+      bind: [tagId],
       type: QueryTypes.SELECT
     });
     return res.status(200).json(tags);

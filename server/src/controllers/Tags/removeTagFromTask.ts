@@ -11,11 +11,11 @@ export default async function removeTagFromTask(req: Request, res: Response): Pr
     return res.status(400).json({ message: "Missing required fields" });
   }
   try {
-    const result = await db.Tags.sequelize.query(`DELETE FROM "Task_tags" WHERE taskId = $1 AND tagId = $2`, {
+    const result = await db.Tags.sequelize.query(`DELETE FROM "Task_tags" WHERE task_id = $1 AND tag_id = $2 RETURNING *`, {
       bind: [taskId, tagId],
       type: QueryTypes.DELETE
     });
-    if (result[0].rowCount === 0) {
+    if (!result[0]) {
       return res.status(404).json({ message: "Tags not found" });
     }
     return res.status(204).json({ message: "Tag removed from task successfully" });

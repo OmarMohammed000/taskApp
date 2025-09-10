@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import cookieParser from 'cookie-parser';
+import taskRoutes from './routes/tasks.js';
+import tagRoutes from './routes/tags.js';
 
 
 dotenv.config();
@@ -14,6 +16,8 @@ const PORT = process.env.PORT || 3000;
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/tasks',taskRoutes);
+app.use('/tags', tagRoutes);  
 
 
 

@@ -6,13 +6,32 @@ export default async function createTask(req: Request, res: Response): Promise<R
   if(!req.body || Object.keys(req.body).length === 0) {
     return res.status(400).json({ message: "Request body is missing" });
   }
-  const { title, description,due_date,category,status, userId } = req.body;
-  if (!title || !description || !due_date || !category || !status || !userId) {
-    return res.status(400).json({ message: "Missing required fields: " + 
-      [!title && "title", !description && "description", !due_date && "due_date", !category && "category", !status && "status", !userId && "userId"]
-        .filter(Boolean)
-        .join(", ") });
+    const { title, description= null, due_date=new Date(), category= "todo", status = "pending", userId } = req.body as {
+    title: string;
+    description?: string;
+    due_date?: Date;
+    category?: string;
+    status?: string;
+    userId: number;
+  };
+  if (!title || !userId) {
+    return res.status(400).json({ message: "Missing required fields" });
   }
+  let xp_value: number;
+  switch(category) { 
+    case "todo":{
+       xp_value = 25;
+       break;
+    }
+    case "habit":{
+       xp_value = 50;
+       break;
+    }
+    default:{
+        return res.status(400).json({ message: "Invalid category value" });
+    }
+  }
+
   try{
     const user = await db.Users.sequelize.query(`SELECT * FROM "Users" WHERE id = $1`, {
       bind:[userId],
@@ -21,8 +40,8 @@ export default async function createTask(req: Request, res: Response): Promise<R
     if (!user[0]) {
       return res.status(404).json({ message: "User not found" });
     }
-    const newTask = await db.Tasks.sequelize.query(`INSERT INTO "Tasks" (title,description,category,status,user_id,due_date) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *;`, {
-      bind: [title, description, category, status, userId, due_date],
+    const newTask = await db.Tasks.sequelize.query(`INSERT INTO "Tasks" (title,description,category,xp_value,status,user_id,due_date) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *;`, {
+      bind: [title, description, category, xp_value, status, userId, due_date],
       type: QueryTypes.INSERT
     });
     return res.status(201).json({ message: "Task created successfully", task: newTask[0] });

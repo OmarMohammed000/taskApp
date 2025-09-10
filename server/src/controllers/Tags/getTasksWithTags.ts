@@ -3,14 +3,23 @@ import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
 
 export default async function getTasksWithTags(req: Request, res: Response): Promise<Response | void> {
+  const taskId = parseInt(req.params.id);
+  if (!taskId) {
+    return res.status(400).json({ message: "Missing required parameter: id" });
+  }
+  //array_agg returns an array of tag names associated with each task 
   try {
     const tasks = await db.Tasks.sequelize.query(`
-      SELECT t.id, t.title, array_agg(tag.name) as tags
+      SELECT
+        t.id,
+        t.title,
+        COALESCE(array_agg(tag.name) FILTER (WHERE tag.name IS NOT NULL), '{}'::text[]) AS tags
       FROM "Tasks" t
-      LEFT JOIN "Task_tags" tt ON t.id = tt.taskId
-      LEFT JOIN "Tags" tag ON tt.tagId = tag.id
-      GROUP BY t.id
-    `, { type: QueryTypes.SELECT });
+      LEFT JOIN "Task_tags" tt ON tt.task_id = t.id
+      LEFT JOIN "Tags" tag ON tag.id = tt.tag_id
+      WHERE t.id = $1
+      GROUP BY t.id, t.title
+    `, { bind: [taskId], type: QueryTypes.SELECT });
 
     return res.status(200).json(tasks);
   } catch (error) {

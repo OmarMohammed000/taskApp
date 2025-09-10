@@ -8,10 +8,26 @@ export default async function addTagToTask(req: Request, res: Response): Promise
   }
   const { taskId, tagId } = req.body;
   if (!taskId || !tagId) {
-    return res.status(400).json({ message: "Missing required fields" });
+    return res.status(400).json({ message: "Missing required fields"});
   }
   try {
-    await db.Tags.sequelize.query(`INSERT INTO "Task_tags" (taskId, tagId) VALUES ($1, $2)`, {
+    // Check if task exists
+    const task = await db.Tasks.sequelize.query(`SELECT * FROM "Tasks" WHERE id = $1`, {
+      bind: [taskId],
+      type: QueryTypes.SELECT
+    });
+    if (!task[0]) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    // Check if tag exists
+    const tag = await db.Tags.sequelize.query(`SELECT * FROM "Tags" WHERE id = $1`, {
+      bind: [tagId],
+      type: QueryTypes.SELECT
+    });
+    if (!tag[0]) {
+      return res.status(404).json({ message: "Tag not found" });
+    }
+    await db.Tags.sequelize.query(`INSERT INTO "Task_tags" (task_id, tag_id) VALUES ($1, $2)`, {
       bind: [taskId, tagId],
       type: QueryTypes.INSERT
     });

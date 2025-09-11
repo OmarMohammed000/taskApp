@@ -8,8 +8,8 @@ export const ThemeContext = createContext({
 });
 
 const THEME_STORAGE_KEY = 'task-theme-preference';
-const [mode,setMode]= useState<"light" | "dark">(localStorage.getItem(THEME_STORAGE_KEY) === 'dark' ? 'dark' : 'light');
 export const ThemeContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [mode,setMode]= useState<"light" | "dark">(localStorage.getItem(THEME_STORAGE_KEY) === 'dark' ? 'dark' : 'light');
 // making toggle function
 const colorMode = useMemo(
     () => ({

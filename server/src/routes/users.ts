@@ -11,7 +11,7 @@ const userRoutes = Router();
 userRoutes.get("/leaderboard",  getLeaderboard);
 //all routes below are protected to make sure they are logged in
 userRoutes.use(isAuth);
-userRoutes.get("/:id",  getUserById);
+userRoutes.get("/",  getUserById);
 userRoutes.put("/", updateUser);
 userRoutes.patch("/progress",  updateUserProgress);
 userRoutes.delete("/:id",  deleteUser);

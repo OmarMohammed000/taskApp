@@ -1,11 +1,15 @@
 import React from 'react';
 import './App.css';
+import { ThemeContextProvider } from './context/ThemeContext';
+
 
 function App() {
   return (
-    <div className="App">
-      z
-    </div>
+      <ThemeContextProvider>
+      <main className="App">
+        z
+      </main>
+      </ThemeContextProvider>
   );
 }
 

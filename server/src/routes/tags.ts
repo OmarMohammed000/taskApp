@@ -7,11 +7,13 @@ import removeTagFromTask from "../controllers/Tags/removeTagFromTask.js";
 import createTag from "../controllers/Tags/createTag.js";
 import deleteTag from "../controllers/Tags/deleteTag.js";
 import updateTag from "../controllers/Tags/updateTag.js";
+import getAllTags from "../controllers/Tags/getAllTags.js";
 
 const tagRoutes = Router();
 
 //all routes below are protected to make sure they are logged in
 tagRoutes.use(isAuth);
+tagRoutes.get("/", getAllTags);
 tagRoutes.get("/:id", getTags);
 tagRoutes.post("/", createTag);
 tagRoutes.post("/add", addTagToTask);

@@ -8,9 +8,10 @@ export default async function getUserById(req: Request, res: Response): Promise<
     return res.status(401).json({ message: "Unauthorized" });
   }
   try {
-    const user = await db.Users.sequelize.query(`SELECT id, name, email, xp, level_id FROM "Users" WHERE id = $1`, {
+    // ambiguous column name error happened because both tables have id columns so we need to prefix them with table alias
+    const user = await db.Users.sequelize.query(`SELECT u.id, u.name, email, xp, level_id, l.level_number FROM "Users" u LEFT JOIN "Levels" l ON u.level_id = l.id WHERE u.id = $1`, {
       bind:[userId], type: QueryTypes.SELECT
-    });
+    }); 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

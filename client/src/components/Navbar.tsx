@@ -22,9 +22,11 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useUser } from '../context/UserContext';
 
 export default function Navbar() {
   const { isAuthenticated, logout } = useAuth();
+  const { user } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -102,7 +104,7 @@ export default function Navbar() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         {!isMobile && (
           <Chip
-            label="Level 5 • 1,250 XP"
+            label={`Level ${user?.level_number ?? 1} • ${user?.xp ?? 0} XP`}
             size="small"
             variant="outlined"
             sx={{

@@ -7,6 +7,7 @@ import { AuthProvider } from './context/AuthContext';
 import {ThemeContextProvider as CustomThemeProvider} from './context/ThemeContext';
 import { RouterProvider } from 'react-router-dom';
 import { SocketProvider } from './context/SocketContext';
+import { UserProvider } from './context/UserContext';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -31,9 +32,11 @@ export default function App() {
   return (
     <AuthProvider>
       <SocketProvider>
+        <UserProvider>
       <CustomThemeProvider>
         <RouterProvider router={router} />
       </CustomThemeProvider>
+        </UserProvider>
     </SocketProvider>
     </AuthProvider>
   );

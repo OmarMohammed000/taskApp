@@ -1,15 +1,20 @@
-import { Request, Response } from "express";
+import e, { Request, Response } from "express";
 import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
 import isSafe from "../../utils/isSafe.js";
+import { emitLeaderboardUpdate, emitUserUpdate } from "../../routes/socket.js";
 
 export default async function updateUserProgress(req: Request, res: Response): Promise<Response | void> {
   if(!req.body || Object.keys(req.body).length === 0) {
     return res.status(400).json({ message: "Request body is missing" });
   }
-  const { userId, xpGained } = req.body;
+ const userId = (req as any).user?.userId;
+  if (!userId) {
+    return res.status(400).json({ message: "Invalid or missing user ID" });
+  }
+  const {  xpGained } = req.body;
   if (!userId || !xpGained || (parseInt(xpGained) !== 25 && parseInt(xpGained) !== 50)) {
-    return res.status(400).json({ message: "Missing or invalid required fields" });
+    return res.status(400).json({ message: `Missing or invalid required fields` });
   }
   if(isSafe([String(userId), String(xpGained)]) === false) {
     return res.status(400).json({ message: "Input contains unsafe characters" });
@@ -30,7 +35,7 @@ export default async function updateUserProgress(req: Request, res: Response): P
     const newXp = parseInt(user[0].xp) + parseInt(xpGained);
 
     // make coalesce to handle case where no level matches (set to highest level) it returns the first not null value
-    const updated = await db.Users.sequelize.query(
+    const updatedUser = await db.Users.sequelize.query(
       `
       UPDATE "Users"
       SET xp = $1,
@@ -61,7 +66,9 @@ export default async function updateUserProgress(req: Request, res: Response): P
     );
 
     await t.commit();
-    return res.status(200).json({ message: "User progress updated successfully", stats: stats[0] });
+    emitUserUpdate(userId, stats[0]);
+    await emitLeaderboardUpdate();
+    return res.status(200).json({ message: "User progress updated successfully", user: updatedUser[0], stats: stats[0]  });
   } catch {
     await t.rollback();
     console.error("Error updating user progress");

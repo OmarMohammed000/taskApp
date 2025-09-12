@@ -16,7 +16,8 @@ import {
 import {
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  Edit as EditIcon
+  Edit as EditIcon,
+  Delete as DeleteIcon // added delete icon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
@@ -139,9 +140,10 @@ const TaskList: React.FC = () => {
     try {
       const response = await makeRequest('/tasks', {
         method: 'POST',
-        data: { ...taskData, task_type: taskType }
+        data: { ...taskData, category: taskType }
       });
       setTasks(prev => [...prev, response.data]);
+      fetchTasks(); // refresh to get normalized data
     } catch (error) {
       console.error('Failed to create task:', error);
       throw error;
@@ -177,10 +179,17 @@ const TaskList: React.FC = () => {
         method: 'PATCH',
         data: updates
       });
-      
-      setTasks(prev => prev.map(t => 
-        t.id === taskId ? { ...t, ...response.data } : t
+
+      // Normalize server response: many endpoints return { message, task: [ {...} ] }
+      let serverTask: any = response?.data;
+      if (serverTask?.task) serverTask = Array.isArray(serverTask.task) ? serverTask.task[0] : serverTask.task;
+      if (Array.isArray(serverTask)) serverTask = serverTask[0];
+
+      // Merge existing local task, server response (if any), and the updates we sent.
+      setTasks(prev => prev.map(t =>
+        t.id === taskId ? { ...t, ...(serverTask || {}), ...updates } : t
       ));
+
       setEditingTask(null);
     } catch (error) {
       console.error('Failed to update task:', error);
@@ -189,7 +198,19 @@ const TaskList: React.FC = () => {
   };
 
   const handlePriorityChange = async (taskId: number, priority: 'low' | 'medium' | 'high') => {
-    await handleUpdateTask(taskId, { priority });
+    // Optimistic update: show change immediately and remember previous value to revert on failure
+    const previous = tasks.find(t => t.id === taskId)?.priority;
+
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, priority } : t));
+
+    try {
+      await handleUpdateTask(taskId, { priority });
+    } catch (err) {
+      console.error('Failed to change priority:', err);
+      // revert single task to previous value on failure
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, priority: previous ?? 'medium' } : t));
+      // optionally refetch tasks: fetchTasks();
+    }
   };
 
   const handleAddTag = async (taskId: number, tagId: number) => {
@@ -285,6 +306,20 @@ const TaskList: React.FC = () => {
     }
   };
 
+  const handleDeleteTask = async (taskId: number) => {
+    // simple confirm to avoid accidental deletes
+   
+    try {
+      await makeRequest(`/tasks/${taskId}`, { method: 'DELETE' });
+      // remove locally
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+      if (expandedTask === taskId) setExpandedTask(null);
+      if (editingTask === taskId) setEditingTask(null);
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+    }
+  };
+
   const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
     const isExpanded = expandedTask === task.id;
     const isEditing = editingTask === task.id;
@@ -322,19 +357,21 @@ const TaskList: React.FC = () => {
               </Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={1}>
-              <Chip 
-                label={`${task.xp_reward} XP`} 
+              {/* Removed XP Chip visual as requested */}
+              
+              {/* Delete button (stopPropagation so parent onClick won't toggle) */}
+              <IconButton 
                 size="small" 
-                color="primary" 
-                variant="outlined"
-              />
-              {task.streak_count && (
-                <Chip 
-                  label={`${task.streak_count} 🔥`} 
-                  size="small" 
-                  color="warning"
-                />
-              )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteTask(task.id);
+                }}
+                aria-label="delete task"
+              >
+                <DeleteIcon />
+              </IconButton>
+
+            
               <IconButton size="small">
                 {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
               </IconButton>

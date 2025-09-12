@@ -12,8 +12,8 @@ export default async function updateTask(req: Request, res: Response): Promise<R
   if (!req.body || Object.keys(req.body).length === 0) {
     return res.status(400).json({ message: "Request body is missing" });
   }
-  const { title, description, due_date, category, status } = req.body;
-  if ((!title && !description && !due_date && !category && !status) || (title === "" || description === "" || due_date === "" || category === "" || status === "")) {
+  const { title, description, due_date, category, status, priority } = req.body;
+  if ((!title && !description && !due_date && !category && !status && !priority) || (title === "" || description === "" || due_date === "" || category === "" || status === "" || priority === "")) {
     return res.status(400).json({ message: "At least one valid field (non-empty) must be provided to update" });
   }
   if (isSafe([title, description ?? "", category, status]) === false) {
@@ -74,6 +74,14 @@ export default async function updateTask(req: Request, res: Response): Promise<R
       }
       updates.push(`status = $${paramCount++}`);
       bindings.push(status);
+    }
+    if (priority) {
+      const validPriorities = ["low", "medium", "high"];
+      if (!validPriorities.includes(priority)) {
+        return res.status(400).json({ message: "Invalid priority value" });
+      }
+      updates.push(`priority = $${paramCount++}`);
+      bindings.push(priority);
     }
 
     const updateQuery = `UPDATE "Tasks" SET ${updates.join(", ")} WHERE id = $${paramCount} RETURNING *;`;

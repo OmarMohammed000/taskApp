@@ -33,8 +33,8 @@ export default function Navbar() {
   // Navigation handlers
   const handleNavigation = (path: string) => navigate(path);
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = () => {
+    logout();
     navigate('/login');
   };
 

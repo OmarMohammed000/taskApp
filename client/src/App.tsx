@@ -6,6 +6,7 @@ import AuthForm from './pages/AuthForm';
 import { AuthProvider } from './context/AuthContext';
 import {ThemeContextProvider as CustomThemeProvider} from './context/ThemeContext';
 import { RouterProvider } from 'react-router-dom';
+import { SocketProvider } from './context/SocketContext';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -29,9 +30,11 @@ const router = createBrowserRouter([
 export default function App() {
   return (
     <AuthProvider>
+      <SocketProvider>
       <CustomThemeProvider>
         <RouterProvider router={router} />
       </CustomThemeProvider>
+    </SocketProvider>
     </AuthProvider>
   );
 }

@@ -9,6 +9,7 @@ import { RouterProvider } from 'react-router-dom';
 import { SocketProvider } from './context/SocketContext';
 import { UserProvider } from './context/UserContext';
 import Profile from './pages/Profile';
+import Leaderboard from './pages/Leaderboard';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -30,6 +31,8 @@ const router = createBrowserRouter([
         element: <Profile></Profile>
       },
       {
+        path: "/leaderboard",
+        element:<Leaderboard/>
       }
     ]
   }

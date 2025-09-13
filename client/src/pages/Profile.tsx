@@ -24,6 +24,7 @@ import {
 import { useUser } from "../context/UserContext";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
 export default function Profile() {
   const { user, stats, fetchUser } = useUser();
@@ -131,6 +132,8 @@ export default function Profile() {
   };
 
   return (
+    <>
+    <Navbar></Navbar>
     <Box sx={{ p: 3 }}>
       <Paper sx={{ p: 3, maxWidth: 900, margin: "0 auto" }}>
         <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -157,6 +160,7 @@ export default function Profile() {
                 <TextField
                   label="Email"
                   value={email}
+                  type="email"
                   onChange={(e) => setEmail(e.target.value)}
                   fullWidth
                 />
@@ -265,5 +269,6 @@ export default function Profile() {
         </Snackbar>
       </Paper>
     </Box>
+    </>
   );
 }

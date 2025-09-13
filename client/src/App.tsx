@@ -8,6 +8,7 @@ import {ThemeContextProvider as CustomThemeProvider} from './context/ThemeContex
 import { RouterProvider } from 'react-router-dom';
 import { SocketProvider } from './context/SocketContext';
 import { UserProvider } from './context/UserContext';
+import Profile from './pages/Profile';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -24,6 +25,12 @@ const router = createBrowserRouter([
         path: '/register',
         element: <AuthForm isRegister={true} />
       },
+      {
+        path:"/profile",
+        element: <Profile></Profile>
+      },
+      {
+      }
     ]
   }
 ]);

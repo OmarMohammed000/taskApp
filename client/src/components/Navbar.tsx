@@ -76,19 +76,6 @@ export default function Navbar() {
 
           <Button
             color="inherit"
-            startIcon={<Assignment />}
-            onClick={() => handleNavigation('/tasks')}
-            sx={{
-              mr: 2,
-              backgroundColor: isActive('/tasks') ? 'rgba(255,255,255,0.1)' : 'transparent',
-              '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
-            }}
-          >
-            Tasks
-          </Button>
-
-          <Button
-            color="inherit"
             startIcon={<EmojiEvents />}
             onClick={() => handleNavigation('/leaderboard')}
             sx={{
@@ -130,17 +117,7 @@ export default function Navbar() {
           </IconButton>
         </Tooltip>
 
-        {/* Settings quick access (optional) */}
-        <Tooltip title="Settings">
-          <IconButton
-            onClick={() => handleNavigation('/settings')}
-            size="small"
-            sx={{ ml: 0.5 }}
-            aria-label="settings"
-          >
-            <Settings />
-          </IconButton>
-        </Tooltip>
+      
 
         {/* Logout as a separate action */}
         <Tooltip title="Logout">

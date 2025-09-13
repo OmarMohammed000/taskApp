@@ -64,7 +64,7 @@ export default function Leaderboard() {
     return () => {
       socket.off("leaderboardUpdate", onLeaderboard);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [socket]);
 
   return (

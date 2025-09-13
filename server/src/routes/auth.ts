@@ -1,8 +1,8 @@
 import { Router } from "express";
-import register from "../controllers/Auth/register.js";
-import login from "../controllers/Auth/login.js";
-import refreshToken from "../controllers/Auth/refershtoken.js";
-import logout from "../controllers/Auth/logout.js";
+import register from "../controllers/Auth/register.ts";
+import login from "../controllers/Auth/login.ts";
+import refreshToken from "../controllers/Auth/refershtoken.ts";
+import logout from "../controllers/Auth/logout.ts";
 
 const authRoutes = Router();
 

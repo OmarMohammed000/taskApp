@@ -7,8 +7,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "esModuleInterop": true,
-    "allowImportingTsExtensions": true,
     "forceConsistentCasingInFileNames": true,
   },
-  "include": ["src/**/*", "jestConfig.js"]
+  "include": ["src/**/*", "jest.config.cjsstConfig.js"]
 }

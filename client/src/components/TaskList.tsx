@@ -357,9 +357,7 @@ const TaskList: React.FC = () => {
               </Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={1}>
-              {/* Removed XP Chip visual as requested */}
-              
-              {/* Delete button (stopPropagation so parent onClick won't toggle) */}
+             
               <IconButton 
                 size="small" 
                 onClick={(e) => {

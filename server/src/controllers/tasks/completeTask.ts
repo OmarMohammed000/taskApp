@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import db from "../../models/index.js";
 import { QueryTypes } from "sequelize";
 import { io } from "../../index.js";
+import { stat } from "fs";
+import { emitUserUpdate, emitLeaderboardUpdate } from "../../routes/socket.js";
 export default async function completeTask(req: Request, res: Response): Promise<Response | void> {
   const taskId = req.params.id ? parseInt(req.params.id) : NaN;
   if (isNaN(taskId)) {
@@ -21,21 +23,24 @@ export default async function completeTask(req: Request, res: Response): Promise
       await t.rollback();
       return res.status(404).json({ message: "Task not found" });
     }
-    if (task.status === 'completed') {
-      await t.rollback();
-      return res.status(200).json({ message: "Task is already completed" });
-    }
+    const currentlyCompleted = task.status === "completed";
+    const newStatus = currentlyCompleted ? "pending" : "completed";
     const xpAward = task.xp_value ? Number(task.xp_value) : (task.category === "habit" ? 50 : 25);
-
-    await db.Tasks.sequelize.query(`UPDATE "Tasks" SET status = 'completed' WHERE id = $1 RETURNING *`, {
-      bind: [taskId],
+    const xpChange = currentlyCompleted ? -xpAward : xpAward;
+    const updatedTaskRows = await db.Tasks.sequelize.query(`UPDATE "Tasks" SET status = $1 WHERE id = $2 RETURNING *`, {
+      bind: [newStatus, taskId],
       type: QueryTypes.UPDATE,
       transaction: t
     });
+    const updatedTask = updatedTaskRows[0];
+    if (!updatedTask) {
+      await t.rollback();
+      return res.status(500).json({ message: "Failed to update task status" });
+    }
     const updatedUserRows = await db.Users.sequelize.query(
       `
       UPDATE "Users"
-      SET xp = xp + $1,
+      SET xp =GREATEST(xp + $1, 0),
           level_id = COALESCE(
             (SELECT id FROM "Levels" WHERE required_xp <= xp + $1 ORDER BY required_xp DESC LIMIT 1),
             (SELECT id FROM "Levels" ORDER BY required_xp ASC LIMIT 1)
@@ -43,7 +48,7 @@ export default async function completeTask(req: Request, res: Response): Promise
       WHERE id = $2
       RETURNING id, name, xp, level_id
       `,
-      { bind: [xpAward, task.user_id], type: QueryTypes.SELECT, transaction: t }
+      { bind: [xpChange, task.user_id], type: QueryTypes.SELECT, transaction: t }
     );
     const updatedUser = updatedUserRows[0];
     if (!updatedUser) {
@@ -74,10 +79,11 @@ export default async function completeTask(req: Request, res: Response): Promise
       io.to(`user:${updatedUser.id}`).emit("user:taskCompleted", {
         taskId: task.id,
         title: task.title,
-        xpAwarded: xpAward,
+        xpAward: xpChange,
         newXp: updatedUser.xp,
         levelNumber: userStats.level_number,
-        xpToNextLevel: userStats.xp_to_next_level
+        xpToNextLevel: userStats.xp_to_next_level,
+        stats: newStatus
       });
       
       // Query and update leaderboard
@@ -99,10 +105,15 @@ export default async function completeTask(req: Request, res: Response): Promise
     } catch (socketError) {
       // Log but don't fail the request if socket emissions fail
       console.error("Socket emission error:", socketError);
+    }try{
+      emitUserUpdate(task.user_id, userStats);
+      await emitLeaderboardUpdate();
+    }catch(socketErr){
+      console.error("Socket emission error:", socketErr);
     }
    return res.status(200).json({
-      message: "Task completed successfully",
-      xpAwarded: xpAward,
+      message:  currentlyCompleted ? "Task reverted to pending and XP removed" : "Task completed successfully",
+      xpAward: xpChange,
       userStats
     });
   } catch (error) {

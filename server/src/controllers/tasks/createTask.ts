@@ -7,10 +7,11 @@ export default async function createTask(req: Request, res: Response): Promise<R
   if(!req.body || Object.keys(req.body).length === 0) {
     return res.status(400).json({ message: "Request body is missing" });
   }
-    const { title, description= null, due_date=new Date(), category= "todo", status = "pending", userId } = req.body as {
+    const { title, description= null, due_date=new Date(), category= "todo", status = "pending", userId, priority = "medium" } = req.body as {
     title: string;
     description?: string;
     due_date?: Date;
+    priority?: string;
     category?: string;
     status?: string;
     userId: number;
@@ -43,8 +44,8 @@ export default async function createTask(req: Request, res: Response): Promise<R
     if (!user[0]) {
       return res.status(404).json({ message: "User not found" });
     }
-    const newTask = await db.Tasks.sequelize.query(`INSERT INTO "Tasks" (title,description,category,xp_value,status,user_id,due_date) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *;`, {
-      bind: [title, description, category, xp_value, status, userId, due_date],
+    const newTask = await db.Tasks.sequelize.query(`INSERT INTO "Tasks" (title,description,category,xp_value,status,user_id,due_date,priority) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *;`, {
+      bind: [title, description, category, xp_value, status, userId, due_date,priority],
       type: QueryTypes.INSERT
     });
     return res.status(201).json({ message: "Task created successfully", task: newTask[0] });

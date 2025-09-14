@@ -16,6 +16,7 @@ export default {
   foreign key (level_id) REFERENCES "Levels"(id)
   );
   CREATE INDEX idx_email on "Users"(email);
+  CREATE INDEX idx_refresh_token on "Users"(refresh_token);
   `);
   },
 
@@ -23,6 +24,7 @@ export default {
     await queryInterface.sequelize.query(`
       DROP TABLE IF EXISTS "Users";
       DROP INDEX IF EXISTS idx_email;
+      DROP INDEX IF EXISTS idx_refresh_token;
     `);
   },
 };

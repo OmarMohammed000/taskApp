@@ -114,7 +114,7 @@ TaskApp is a comprehensive task management system that combines productivity wit
 
 5. **Run database migrations**
    ```bash
-   npx sequelize-cli db:migrate:all
+   npx sequelize-cli db:migrate
    ```
 
 6. **Seed the database with initial data**
@@ -124,8 +124,7 @@ TaskApp is a comprehensive task management system that combines productivity wit
 
 7. **Build and start the server**
    ```bash
-   npm run build
-   npm run start
+   npm run dev
    ```
 
 The server will start on port 4000 (or the PORT specified in your .env file)

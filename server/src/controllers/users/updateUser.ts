@@ -17,6 +17,9 @@ export default async function updateUser(req:Request,res:Response):Promise<Respo
   if(isAdmin && !changeID ){
     return res.status(400).json({ message: "Missing changeID for admin update" });
   }
+  if(changeID && userId === changeID){
+    return res.status(400).json({ message: "Use profile update endpoint to update your own details" });
+  }
   if(isSafe([String(userId), name ?? "", email ?? ""]) === false) {
     return res.status(400).json({ message: "Input contains unsafe characters" });
   }

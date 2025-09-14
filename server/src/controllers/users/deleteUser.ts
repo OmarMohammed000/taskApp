@@ -7,7 +7,15 @@ export default async function deleteUser(req: Request, res: Response): Promise<R
   if (isNaN(userId)) {
     return res.status(400).json({ message: "Invalid user ID" });
   }
+  const requesterId = (req as any).user?.userId;
   try{
+    const requester = await db.Users.sequelize.query(`SELECT * FROM "Users" WHERE id = $1`, {
+      bind:[requesterId],
+      type: QueryTypes.SELECT
+    });
+    if (!requester[0].isAdmin) {
+      return res.status(403).json({ message: "Only admins can delete users" });
+    }
     const user = await db.Users.sequelize.query(`SELECT * FROM "Users" WHERE id = $1`, {
       bind:[userId],
       type: QueryTypes.SELECT

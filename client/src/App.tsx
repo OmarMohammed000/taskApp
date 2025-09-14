@@ -10,6 +10,8 @@ import { SocketProvider } from './context/SocketContext';
 import { UserProvider } from './context/UserContext';
 import Profile from './pages/Profile';
 import Leaderboard from './pages/Leaderboard';
+import Admindash from './pages/Admindash/Admindash';
+import { ProtectedRoute } from './components/ProtectedRoute';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -33,6 +35,10 @@ const router = createBrowserRouter([
       {
         path: "/leaderboard",
         element:<Leaderboard/>
+      },
+      {
+        path: "/admin",
+        element:<ProtectedRoute><Admindash /></ProtectedRoute>
       }
     ]
   }

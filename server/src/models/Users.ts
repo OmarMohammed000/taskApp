@@ -10,6 +10,7 @@ interface UserAttributes {
   level_id?: number;
   createdAt?: Date;
   refresh_token?: string;
+  isAdmin?: boolean;
 }
 type UserCreationAttributes = Optional<UserAttributes, 'id'| 'xp' | 'level_id' | 'createdAt'>;
 const Users = (sequelize: Sequelize) => {
@@ -47,6 +48,10 @@ const Users = (sequelize: Sequelize) => {
     refresh_token: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    isAdmin: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     }
   }, {
     tableName: "Users",

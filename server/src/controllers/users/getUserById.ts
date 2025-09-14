@@ -9,7 +9,7 @@ export default async function getUserById(req: Request, res: Response): Promise<
   }
   try {
     // ambiguous column name error happened because both tables have id columns so we need to prefix them with table alias
-    const user = await db.Users.sequelize.query(`SELECT u.id, u.name, email, xp, level_id, l.level_number FROM "Users" u LEFT JOIN "Levels" l ON u.level_id = l.id WHERE u.id = $1`, {
+    const user = await db.Users.sequelize.query(`SELECT u.id, u.name, email, xp, u."isAdmin", level_id, l.level_number FROM "Users" u LEFT JOIN "Levels" l ON u.level_id = l.id WHERE u.id = $1`, {
       bind:[userId], type: QueryTypes.SELECT
     }); 
     if (!user) {

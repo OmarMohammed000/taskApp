@@ -7,6 +7,7 @@ interface User {
   name: string;
   email: string;
   xp: number;
+  isAdmin: boolean;
   level_id: number;
   level_number?: number;
 }

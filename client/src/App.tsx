@@ -43,9 +43,9 @@ export default function App() {
     <AuthProvider>
       <SocketProvider>
         <UserProvider>
-      <CustomThemeProvider>
-        <RouterProvider router={router} />
-      </CustomThemeProvider>
+          <CustomThemeProvider>
+            <RouterProvider router={router} />
+         </CustomThemeProvider>
         </UserProvider>
     </SocketProvider>
     </AuthProvider>

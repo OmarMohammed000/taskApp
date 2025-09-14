@@ -85,6 +85,18 @@ export default function Navbar() {
           >
             Leaderboard
           </Button>
+          {user?.isAdmin && 
+             <Button
+            color="inherit"
+            onClick={() => handleNavigation('/admin')}
+            sx={{
+              backgroundColor: isActive('/admin') ? 'rgba(255,255,255,0.1)' : 'transparent',
+              '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
+            }}
+          >
+            Admin Dashboard
+          </Button>
+          }
         </Box>
       )}
 

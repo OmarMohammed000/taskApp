@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import axios from 'axios';
 
 interface AuthContextType {
@@ -46,8 +46,52 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAuthenticated(false);
   }
 
+  // Logout function - defined early to avoid circular dependency
+  const logout = useCallback(async () => {
+    try {
+      // Try to logout from server
+      await axios.post(`${API_BASE_URL}/auth/logout`, {}, {
+        withCredentials: true,
+        timeout: 5000,
+        headers: {
+          Authorization: `Bearer ${getAccessToken()}`
+        }
+      });
+      console.log('Server logout successful');
+    } catch (error) {
+      console.log(' Server logout failed, continuing with local logout');
+    } finally {
+      clearAccessToken();
+      setError(null);
+    }
+  }, []);
+
+  // Refresh token function
+  const refreshToken = useCallback(async (): Promise<boolean> => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, {
+        withCredentials: true,
+        timeout: 5000
+      });
+
+      const { newAccessToken } = response.data;
+
+      if (newAccessToken) {
+        setAccessTokenState(newAccessToken);
+        console.log(' Token refreshed successfully');
+        return true;
+      } else {
+        throw new Error('No access token in response');
+      }
+    } catch (error: any) {
+      console.error('Error refreshing token:', error);
+      clearAccessToken();
+      return false;
+    }
+  }, []);
+
   // Generic request function with automatic token handling
-  const makeRequest = async (url: string, options: any = {}) => {
+  const makeRequest = useCallback(async (url: string, options: any = {}) => {
     const token = getAccessToken();
     
     const config = {
@@ -67,13 +111,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
-      console.log('➡️ Making request:', config.method || 'GET', url);
+      console.log(' Making request:', config.method || 'GET', url);
       const response = await axios(config);
       return response;
     } catch (error: any) {
       // Handle 401 errors with token refresh
       if (error.response?.status === 401 && !url.includes('/auth/refresh')) {
-        console.log('🔄 Token expired, attempting refresh...');
+        console.log(' Token expired, attempting refresh...');
         const refreshSuccess = await refreshToken();
         
         if (refreshSuccess) {
@@ -82,7 +126,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           if (newToken) {
             config.headers.Authorization = `Bearer ${newToken}`;
           }
-          console.log('🔄 Retrying request with new token...');
+          console.log(' Retrying request with new token...');
           return await axios(config);
         } else {
           logout();
@@ -91,31 +135,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       throw error;
     }
-  };
-
-  // Refresh token function
-  const refreshToken = async (): Promise<boolean> => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, {
-        withCredentials: true,
-        timeout: 5000
-      });
-
-      const { newAccessToken } = response.data;
-
-      if (newAccessToken) {
-        setAccessTokenState(newAccessToken);
-        console.log('✅ Token refreshed successfully');
-        return true;
-      } else {
-        throw new Error('No access token in response');
-      }
-    } catch (error: any) {
-      console.error('❌ Error refreshing token:', error);
-      clearAccessToken();
-      return false;
-    }
-  };
+  }, [refreshToken, logout]);
 
   // Register function
   const register = async (email: string, name: string, password: string): Promise<{ success: boolean; message?: string }> => {
@@ -135,7 +155,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return { success: true, message: response.data.message || 'Registration successful. Please log in.' };
 
     } catch (error: any) {
-      console.error('❌ Registration error:', error);
+      console.error('Registration error:', error);
       const message = error.response?.data?.message || 'Registration failed';
       setError(message);
       return { success: false, message };
@@ -165,10 +185,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       setAccessTokenState(accessToken);
-      console.log('✅ Login successful');
+      console.log('Login successful');
       return { success: true };
     } catch (error: any) {
-      console.error('❌ Login error:', error);
+      console.error('Login error:', error);
       const message = error.response?.data?.message || 'Login failed';
       setError(message);
       return { success: false, message };
@@ -176,27 +196,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setLoading(false);
     }
   }
-
-  // Logout function
-  const logout = async () => {
-    try {
-      // Try to logout from server
-      await axios.post(`${API_BASE_URL}/auth/logout`, {}, {
-        withCredentials: true,
-        timeout: 5000,
-        headers: {
-          Authorization: `Bearer ${getAccessToken()}`
-        }
-      });
-      console.log('✅ Server logout successful');
-    } catch (error) {
-      console.log('⚠️ Server logout failed, continuing with local logout');
-    } finally {
-      clearAccessToken();
-      setError(null);
-      console.log('✅ Local logout complete');
-    }
-  };
 
   // Initialization
   useEffect(() => {
@@ -206,31 +205,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     if (storedToken) {
       setIsAuthenticated(true);
-      console.log('✅ Found stored token, user is authenticated');
+      console.log(' Found stored token, user is authenticated');
     } else {
       setIsAuthenticated(false);
-      console.log('ℹ️ No stored token found');
+      console.log('No stored token found');
     }
     
     setLoading(false);
-    console.log('✅ AuthProvider initialization complete');
+    console.log(' AuthProvider initialization complete');
   }, []);
 
   // Auto-refresh timer
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    console.log('⏰ Setting up auto-refresh timer...');
+    console.log('Setting up auto-refresh timer...');
     const refreshInterval = setInterval(() => {
-      console.log('⏰ Auto-refresh triggered');
+      console.log(' Auto-refresh triggered');
       refreshToken();
     }, 14 * 60 * 1000); // 14 minutes
 
     return () => {
       clearInterval(refreshInterval);
-      console.log('⏰ Auto-refresh timer cleared');
+      console.log(' Auto-refresh timer cleared');
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, refreshToken]);
 
   const value: AuthContextType = {
     isAuthenticated,

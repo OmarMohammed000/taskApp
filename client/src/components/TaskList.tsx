@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -62,15 +62,7 @@ const TaskList: React.FC = () => {
   const habits = tasks.filter(task => task.task_type === 'habit');
   const todos = tasks.filter(task => task.task_type === 'todo');
 
-  // Fetch tasks and tags on component mount
-  // wait for user id, then fetch
-  useEffect(() => {
-    if (!id) return;
-    fetchTasks();
-    fetchTags();
-  }, [id]);
-  
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       if (!id) return;
       const response = await makeRequest(`/tasks/user/${id}`, { method: 'GET' });
@@ -94,7 +86,6 @@ const TaskList: React.FC = () => {
         due_date: t.due_date,
         created_at: t.created_at ?? new Date().toISOString(),
         xp_reward: (t.xp_value ?? t.xp_reward) as 25 | 50,
-        streak_count: t.streak_count,
         tags: t.tags ?? []
       }));
 
@@ -104,9 +95,9 @@ const TaskList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, makeRequest]);
 
-  const fetchTags = async (): Promise<Tag[]> => {
+  const fetchTags = useCallback(async (): Promise<Tag[]> => {
     try {
       const response = await makeRequest('/tags', { method: 'GET' });
       setTags(response.data);
@@ -115,7 +106,13 @@ const TaskList: React.FC = () => {
       console.error('Failed to fetch tags:', error);
       return [];
     }
-  };
+  }, [makeRequest]);
+
+  useEffect(() => {
+    if (!id) return;
+    fetchTasks();
+    fetchTags();
+  }, [id, fetchTasks, fetchTags]);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -180,7 +177,7 @@ const TaskList: React.FC = () => {
         data: updates
       });
 
-      // Normalize server response: many endpoints return { message, task: [ {...} ] }
+      // Normalize server response: many endpoints return { message,task: [ {...} ] } 
       let serverTask: any = response?.data;
       if (serverTask?.task) serverTask = Array.isArray(serverTask.task) ? serverTask.task[0] : serverTask.task;
       if (Array.isArray(serverTask)) serverTask = serverTask[0];

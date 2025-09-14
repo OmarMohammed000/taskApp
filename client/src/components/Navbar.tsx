@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   AppBar,
   Toolbar,
@@ -14,10 +14,8 @@ import {
 } from '@mui/material';
 import {
   Logout,
-  Assignment,
   Dashboard,
   Person,
-  Settings,
   EmojiEvents
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';

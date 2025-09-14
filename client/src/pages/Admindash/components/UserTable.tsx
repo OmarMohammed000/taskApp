@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -32,7 +32,7 @@ const UserTable: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editUserDialog, setEditUserDialog] = useState(false);
  
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const response = await makeRequest('/users/all');
@@ -42,11 +42,11 @@ const UserTable: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [makeRequest]);
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
   const handleEditUser = (user: User) => {
     setSelectedUser(user);

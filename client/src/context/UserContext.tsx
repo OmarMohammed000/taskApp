@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import { useSocket } from "./SocketContext";
 
@@ -37,7 +37,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { makeRequest, isAuthenticated } = useAuth();
   const { socket } = useSocket();
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -51,7 +51,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setLoading(false);
     }
-  };
+  }, [makeRequest]);
 
   const updateProgress = async (xpGained: 25 | 50) => {
     setLoading(true);
@@ -61,7 +61,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         method: "PATCH",
         data: { xpGained },
       });
-      // expected shape: { message, user, stats }
       if (response.data.user) {
         setUser(response.data.user as User);
       }
@@ -86,7 +85,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     }
    
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchUser]);
 
   useEffect(() => {
     if (!socket) return;

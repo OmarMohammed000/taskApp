@@ -5,7 +5,8 @@ import {
   IconButton, 
   TextField, 
   Button,
-  Stack
+  Stack,
+  FormHelperText
 } from '@mui/material';
 import { 
   LocalOffer as TagIcon, 
@@ -39,6 +40,15 @@ const TagManager: React.FC<TagManagerProps> = ({
 }) => {
   const [newTagName, setNewTagName] = useState('');
   const [loading, setLoading] = useState<number | null>(null);
+  const [error, setError] = useState<string>('');
+
+  const validateTagName = (name: string): string => {
+    if (!name.trim()) return 'Tag name is required';
+    if (name.length < 2) return 'Tag name must be at least 2 characters';
+    if (name.length > 50) return 'Tag name must be less than 50 characters';
+    if (!/^[a-zA-Z0-9\s-_]+$/.test(name)) return 'Tag name can only contain letters, numbers, spaces, hyphens, and underscores';
+    return '';
+  };
 
   const handleRemoveTag = async (tagId: number) => {
     setLoading(tagId);
@@ -63,18 +73,44 @@ const TagManager: React.FC<TagManagerProps> = ({
   };
 
   const handleCreateTag = async () => {
-    if (!newTagName.trim()) return;
+    const trimmedName = newTagName.trim();
+    const validationError = validateTagName(trimmedName);
+    
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    // Check if tag already exists
+    const existingTag = availableTags.find(tag => 
+      tag.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+    
+    if (existingTag) {
+      setError('A tag with this name already exists');
+      return;
+    }
     
     try {
-      const newTag = await onCreateTag(newTagName.trim());
+      const newTag = await onCreateTag(trimmedName);
       if (!newTag || typeof newTag.id !== 'number') {
         console.error('TagManager: onCreateTag returned invalid tag', newTag);
         return;
       }
       await onAddTag(taskId, newTag.id);
       setNewTagName('');
+      setError('');
     } catch (error) {
       console.error('Failed to create tag:', error);
+      setError('Failed to create tag. Please try again.');
+    }
+  };
+
+  const handleTagNameChange = (value: string) => {
+    setNewTagName(value);
+    if (error) {
+      const validationError = validateTagName(value.trim());
+      setError(validationError);
     }
   };
 
@@ -149,22 +185,30 @@ const TagManager: React.FC<TagManagerProps> = ({
       )}
 
       {/* Create new tag */}
-      <Box display="flex" gap={1} alignItems="center">
-        <TextField
-          size="small"
-          placeholder="New tag name..."
-          value={newTagName}
-          onChange={(e) => setNewTagName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleCreateTag()}
-          sx={{ minWidth: 150 }}
-        />
-        <IconButton
-          size="small"
-          onClick={handleCreateTag}
-          disabled={!newTagName.trim()}
-        >
-          <AddIcon />
-        </IconButton>
+      <Box display="flex" gap={1} alignItems="flex-start" flexDirection="column">
+        <Box display="flex" gap={1} alignItems="center" width="100%">
+          <TextField
+            size="small"
+            placeholder="New tag name..."
+            value={newTagName}
+            onChange={(e) => handleTagNameChange(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleCreateTag()}
+            error={!!error}
+            sx={{ minWidth: 150, flexGrow: 1 }}
+          />
+          <IconButton
+            size="small"
+            onClick={handleCreateTag}
+            disabled={!newTagName.trim() || !!error}
+          >
+            <AddIcon />
+          </IconButton>
+        </Box>
+        {error && (
+          <FormHelperText error sx={{ margin: 0 }}>
+            {error}
+          </FormHelperText>
+        )}
       </Box>
     </Stack>
   );

@@ -212,7 +212,7 @@ After seeding, you can log in with these test accounts:
 - Seeders provide initial data for development/testing
 
 ### Testing
-- Unit tests are available for authentication controllers
+- Unit tests are available for authentication controllers And tag ones
 - Run tests with `npm test` in the server directory
 
 For any issues or questions, please refer to the error logs or create an issue in the repository.
